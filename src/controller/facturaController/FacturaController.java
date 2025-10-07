@@ -113,23 +113,34 @@ public class FacturaController {
     }
     
     public void listarFacturasPorCliente() {
-        String documento = validador.leerTexto("Ingrese el documento del dueño: ");
-        
-        List<Factura> lista = facturaService.listarFacturasPorCliente(documento);
-        
-        Dueno dueno = duenoService.buscarPorDocumento(documento);
-        String nombreDueno = (dueno != null) ? dueno.getNombre_completo() : "Desconocido";
-        String documentoDueno = (dueno != null) ? dueno.getDocumento_identidad() : "Desconocido";
-        
-        System.out.println("\n-------- INFORME DE FACTURACION POR CLIENTE --------");
-        System.out.println("\n-- DATOS DEL CLIENTE --");
-        System.out.println("Dueño: " + nombreDueno);
-        System.out.println("Documento: " + documentoDueno);
-        System.out.println("\nID FACTURA | FECHA EMISION | TOTAL FACTURA");
-        for (Factura f : lista) {
-            imprimirFacturaPorCliente(f);
-        }
+    String documento = validador.leerTexto("Ingrese el documento del dueño: ");
+    Dueno dueno = duenoService.buscarPorDocumento(documento);
+
+    if (dueno == null) {
+        System.out.println("No se encontró ningún dueño con ese documento.");
+        return;
     }
+
+    List<Factura> lista = facturaService.listarFacturasPorCliente(documento);
+
+    System.out.println("\n-------- INFORME DE FACTURACIÓN POR CLIENTE --------");
+    System.out.println("Dueño: " + dueno.getNombre_completo());
+    System.out.println("Documento: " + dueno.getDocumento_identidad());
+
+    if (lista.isEmpty()) {
+        System.out.println("Este cliente no tiene facturas registradas.");
+        return;
+    }
+
+    System.out.println("ID FACTURA | FECHA EMISIÓN | TOTAL FACTURA");
+    for (Factura f : lista) {
+        System.out.printf(
+                f.getId() + "|",
+                f.getFecha_emision().toLocalDate()+ "|",
+                f.getTotal()+ "|");
+    }
+}
+
 
     public void imprimirFactura(Factura factura) {
         if (factura == null) {
