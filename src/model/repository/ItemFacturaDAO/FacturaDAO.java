@@ -89,27 +89,31 @@ public class FacturaDAO implements IFacturaDAO {
                      SELECT F.* 
                      FROM factura F 
                      JOIN dueno D ON F.dueno_id = D.id 
-                     where D.documento_identidad = ?
+                     WHERE D.documento_identidad = ?
+                     ORDER BY F.fecha_emision DESC
                      """;
-        
-        try (Statement stmt = con.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                Factura factura;
-                factura = new Factura(
-                        rs.getInt("id"),
-                        rs.getInt("dueno_id"),
-                        rs.getTimestamp("fecha_emision").toLocalDateTime(),
-                        rs.getDouble("total"),
-                        rs.getString("metodo_pago")
-                );
-                facturas.add(factura);
+    
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, documento);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Factura factura = new Factura(
+                            rs.getInt("id"),
+                            rs.getInt("dueno_id"),
+                            rs.getTimestamp("fecha_emision").toLocalDateTime(),
+                            rs.getDouble("total"),
+                            rs.getString("metodo_pago")
+                    );
+                    facturas.add(factura);
+                }
             }
         } catch (SQLException e) {
-             throw new RuntimeException("Error al listar las facturas del cliente con documento: " + documento + "\n" + e);
+            throw new RuntimeException("Error al listar las facturas del cliente con documento: " + documento, e);
         }
+    
         return facturas;
     }
+
 
 
     @Override
